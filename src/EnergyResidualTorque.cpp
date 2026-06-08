@@ -21,7 +21,7 @@ void EnergyResidualTorque::init(mc_control::MCGlobalController & controller, con
     ctl.controller().datastore().make<bool>("Obstacle detected", false);
   }
 
-  ctl.controller().datastore().make<bool>("Energy Residual Current Obstacle detected", false);
+  ctl.controller().datastore().make<bool>("Energy Residual Torque Obstacle detected", false);
 
   dt_ = ctl.timestep();
   counter_ = 0.0;
@@ -83,13 +83,13 @@ void EnergyResidualTorque::before(mc_control::MCGlobalController & controller)
   if(residual > residual_high_ || residual < residual_low_)
   {
     obstacle_detected_ = true;
-    if(activate_verbose) mc_rtc::log::info("[Energy Residual Current] Obstacle detected");
+    if(activate_verbose) mc_rtc::log::info("[Energy Residual Torque] Obstacle detected");
     if(collision_stop_activated_)
     {
       ctl.controller().datastore().get<bool>("Obstacle detected") = obstacle_detected_;
     }
   }
-  ctl.controller().datastore().get<bool>("Energy Residual Current Obstacle detected") = obstacle_detected_;
+  ctl.controller().datastore().get<bool>("Energy Residual Torque Obstacle detected") = obstacle_detected_;
 }
 
 void EnergyResidualTorque::after(mc_control::MCGlobalController & controller)
