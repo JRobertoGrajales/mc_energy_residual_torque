@@ -47,6 +47,8 @@ private:
   rbd::ForwardDynamics forwardDynamics;
   double integralTerm;
   double tzero; // kinetic energy init
+  double t_kinetic;
+  double energy_input;
   double residual;
 
   LpfThreshold lpf_threshold_;

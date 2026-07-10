@@ -125,9 +125,10 @@ void EnergyResidualTorque::energy_residual_computation(mc_control::MCGlobalContr
   auto coriolisGravityTerm = forwardDynamics.C();
   auto negative_gravity = coriolisMatrix*qdot - coriolisGravityTerm;
   auto inertiaMatrix = forwardDynamics.H() - forwardDynamics.HIr();
-  double t_kinetic = 0.5 * qdot.transpose() * inertiaMatrix * qdot;
+  t_kinetic = 0.5 * qdot.transpose() * inertiaMatrix * qdot;
 
-  integralTerm += (qdot.transpose()*(tau_m + negative_gravity) + residual) * ctl.timestep();
+  energy_input = (qdot.transpose()*(tau_m + negative_gravity) + residual);
+  integralTerm += (energy_input) * ctl.timestep();
   residual = ko * (t_kinetic - integralTerm - tzero);
 
   if(!ctl.controller().datastore().has("energy_residual"))
@@ -180,12 +181,17 @@ void EnergyResidualTorque::addLog(mc_control::MCGlobalController & controller)
   auto & ctl = static_cast<mc_control::MCGlobalController &>(controller);
 
   ctl.controller().logger().addLogEntry("EnergyResidualTorque_residual", [this]() -> const double & { return residual; });
-  ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_high", [this]() -> const double & { return residual_high_; });
-  ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_low", [this]() -> const double & { return residual_low_; });
-  ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_offset", [this]() -> const double & { return threshold_offset_; });
-  ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_filtering", [this]() -> const double & { return threshold_filtering_; });
+  // ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_high", [this]() -> const double & { return residual_high_; });
+  // ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_low", [this]() -> const double & { return residual_low_; });
+  // ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_offset", [this]() -> const double & { return threshold_offset_; });
+  // ctl.controller().logger().addLogEntry("EnergyResidualTorque_threshold_filtering", [this]() -> const double & { return threshold_filtering_; });
   ctl.controller().logger().addLogEntry("EnergyResidualTorque_ko", [this]() -> const double & { return ko; });
-  ctl.controller().logger().addLogEntry("EnergyResidualTorque_obstacleDetected", [this]() -> const bool & { return obstacle_detected_; });
+  // ctl.controller().logger().addLogEntry("EnergyResidualTorque_obstacleDetected", [this]() -> const bool & { return obstacle_detected_; });
+
+  ctl.controller().logger().addLogEntry("EnergyResidualTorque_energy_input", [this]() -> const double & { return energy_input; });
+  ctl.controller().logger().addLogEntry("EnergyResidualTorque_t_kinetic", [this]() -> const double & { return t_kinetic; });
+  ctl.controller().logger().addLogEntry("EnergyResidualTorque_tzero", [this]() -> const double & { return tzero; });
+  ctl.controller().logger().addLogEntry("EnergyResidualTorque_dt", [this]() -> const double & { return dt_; });
 }
 
 void EnergyResidualTorque::addPlot(mc_control::MCGlobalController & controller)
